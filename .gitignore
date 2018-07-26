@@ -1,0 +1,7 @@
+*
+!*/
+!*.c
+!*.S
+!*.txt
+!Makefile
+!makefile
