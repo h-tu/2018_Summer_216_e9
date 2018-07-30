@@ -17,6 +17,20 @@ typedef struct targ {
    int load;
 } Thread_arg;
 
+
+struct timeval tv_delta(struct timeval start, struct timeval end) {
+   struct timeval delta = end;
+
+   delta.tv_sec -= start.tv_sec;
+   delta.tv_usec -= start.tv_usec;
+   if (delta.tv_usec < 0) {
+      delta.tv_usec += 1000000;
+      delta.tv_sec--;
+   }
+
+   return delta;
+}
+
 static void exit_with_usage();
 static int *generate_array(int length, int seed);
 static void *thread_max(void *args);
@@ -30,6 +44,9 @@ int main(int argc, char *argv[]) {
    pthread_t *tids;
    void *(*thread_func) (void *), *result;
    Thread_arg *t_args;
+   struct rusage start_ru, end_ru, start_th, end_th;
+   struct timeval start_wall, end_wall;
+   struct timeval diff_ru_utime, diff_wall, diff_ru_stime, diff_th_utime, diff_th_stime;
 
    /* Parse provided arguments, exiting and printing usage information
     * if an invalid argument or number of arguments is provided. */
@@ -136,6 +153,11 @@ int main(int argc, char *argv[]) {
    thread_pos = array;
 
    /* TODO: Begin timing here. */
+   /* Collecting information */
+   getrusage(RUSAGE_SELF, &start_ru);
+   getrusage(RUSAGE_THREAD, &start_th);
+   gettimeofday(&start_wall, NULL);
+
    tids = calloc(thread_cnt, sizeof(pthread_t));
    if (!tids) {
       err(EX_OSERR, "Allocation failed.");
@@ -186,6 +208,12 @@ int main(int argc, char *argv[]) {
    }
 
    /* TODO: End timing here */
+   
+   /* Collecting information */
+   gettimeofday(&end_wall, NULL);
+   getrusage(RUSAGE_SELF, &end_ru);
+   getrusage(RUSAGE_THREAD, &end_th);
+
 
    if (print_res) {
       if (task == 1) {
@@ -196,6 +224,16 @@ int main(int argc, char *argv[]) {
    }
 
    /* TODO: Print timing information here */
+   /* Computing difference */
+   diff_ru_utime = tv_delta(start_th.ru_utime, end_th.ru_utime);
+   diff_ru_stime = tv_delta(start_th.ru_stime, end_th.ru_stime);
+   diff_wall = tv_delta(start_wall, end_wall);
+   diff_th_utime = tv_delta(start_th.ru_utime, end_th.ru_utime);
+   diff_th_stime = tv_delta(start_th.ru_stime, end_th.ru_stime);
+
+   printf("User time: %ld.%06ld\n", diff_ru_utime.tv_sec + diff_th_utime.tv_sec, diff_ru_utime.tv_usec + diff_th_utime.tv_usec);
+   printf("System time: %ld.%06ld\n", diff_ru_stime.tv_sec + diff_th_stime.tv_sec, diff_ru_stime.tv_usec + diff_th_stime.tv_usec);
+   printf("Wall time: %ld.%06ld\n", diff_wall.tv_sec, diff_wall.tv_usec);
 
    free(array);
    free(tids);
