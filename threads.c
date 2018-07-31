@@ -86,9 +86,6 @@ int main(int argc, char *argv[]) {
       exit_with_usage();
    }
 
-   /* This solved the code duplication problem where I
-    * used the error printing code twice...but at what cost? */
-   /* ...I've created a monster. */
    if (strlen(argv[5]) == 1 && (tmp_chr = argv[5][0])
        && ((is_yes = (tmp_chr == 'Y' || tmp_chr == 'y'))
 	          || (tmp_chr == 'N' || tmp_chr == 'N'))) {
@@ -108,29 +105,6 @@ int main(int argc, char *argv[]) {
    } else {
       thread_func = thread_sum;
    }
-
-   /* Note to group members: I've pretty much resolved this stuff, but I left
-    * this in here for now so you can see my reasoning, 'cause I feel
-    * like my code is kinda hard to follow */
-
-   /* TODO: Figure out how to divide up array and
-            pass array + array length to each thread.
-    * Things to check for:
-    *    * If elt_cnt / thread_cnt = 0, there are more threads intended to be
-    *      created than elements.
-    *      Either need to reject as invalid input, or simply only create as many
-    *      threads as there are elements (still really stupid, but tenable).
-    *    * Make sure no elements being skipped
-    *    * Something like, quotient = elt_cnt / thread_cnt;
-    *      remainder = elt_cnt % thread_cnt;
-    *      Then, spread the remainder over the first (remainder) threads.
-    *      For example:
-    *         elt_cnt = 13, thread_cnt = 5 (quotient = 2, remainder = 3);
-    *         Thread 1: 3, Thread 2: 3, Thread 3: 3, Thread 4: 2, Thread 5: 2.
-    *    * Will have a pos variable that is passed through the struct and
-    *       incremented for each thread, taking care not to lose the original
-    *       array pointer so it can be freed at end.
-    */
 
    /* Calculate number of elements to process per thread */
    quotient = elt_cnt / thread_cnt;
@@ -152,8 +126,7 @@ int main(int argc, char *argv[]) {
    array = generate_array(elt_cnt, seed);
    thread_pos = array;
 
-   /* TODO: Begin timing here. */
-   /* Collecting information */
+   /* Begin timing */
    getrusage(RUSAGE_SELF, &start_ru);
    gettimeofday(&start_wall, NULL);
 
@@ -182,12 +155,6 @@ int main(int argc, char *argv[]) {
       and using said result to compute final answer. */
    final_result = (task == 1) ? INT_MIN : 0;
 
-   /* TODO: Figure out way to eliminate checking for the task with each
-    * iteration that doesn't involve simply copying the entire below section of
-    * code and switching at the beginning to one or the other based on the task
-    * In that situation, the only unique code in the two sections would be the
-    * action taken when !status evaluates to true, which is the
-    * the bit that actually computes the final result. */
    for (i = 0; i < thread_cnt; i++) {
       status = pthread_join(tids[i], &result);
       tmp = *(int *) result;
@@ -206,9 +173,7 @@ int main(int argc, char *argv[]) {
       }
    }
 
-   /* TODO: End timing here */
-   
-   /* Collecting information */
+   /* End timing */
    gettimeofday(&end_wall, NULL);
    getrusage(RUSAGE_SELF, &end_ru);
 
@@ -221,9 +186,7 @@ int main(int argc, char *argv[]) {
       }
    }
 
-   /* TODO: Print timing information here */
-   /* Computing difference */
-
+   /* Compute and print elapsed time */
    diff_ru_utime = tv_delta(start_ru.ru_utime, end_ru.ru_utime);
    diff_ru_stime = tv_delta(start_ru.ru_stime, end_ru.ru_stime);
    diff_wall = tv_delta(start_wall, end_wall);
