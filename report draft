@@ -1,0 +1,7 @@
+For small amounts of data, there is a large overhead associated with having multiple threads running synchronously.
+Here a single threaded execution is fast and efficient as compared to having multiple threads.
+However, as the number of elements in the array is increased, it can be observed that the multithreaded execution is 
+more efficient due to its parallel nature of computation. On the other hand, if the data is kept constant and if the 
+number of threads is increased, then the time taken plateaus out. This happens because the benefit of having an extra 
+thread for computation keeps decaying. With the increasing number of threads and the data being constant, each thread 
+has less data for computation and again the overhead of having threads makes the program execution slow.
