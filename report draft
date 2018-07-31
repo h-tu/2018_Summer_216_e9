@@ -56,14 +56,22 @@ thread count and element count (100 trials per combination) on both tasks:
 ------------------------------------------------------------------------------------------------------------------------
 
 For small amounts of data, there is a large overhead associated with having multiple threads running synchronously.
-Here a single threaded execution is fast and efficient as compared to having multiple threads.
-However, as the number of elements in the array is increased, it can be observed that the multithreaded execution is 
-more efficient due to its parallel nature of computation. On the other hand, if the data is kept constant and if the 
-number of threads is increased, then the time taken plateaus out. This happens because the benefit of having an extra 
-thread for computation keeps decaying. With the increasing number of threads and the data being constant, each thread 
-has less data for computation and again the overhead of having threads makes the program execution slow.
+Here a single threaded execution is fast and efficient as compared to having multiple threads. For example, let us consider
+the wall time for the MAX computation. When there are 10^2 elements, the average wall time for one thread is 00.000071 
+seconds whereas the average wall time for 10 threads is 00.115117 seconds (significantly higher for same number of elements).
+However, as the number of elements in the array is increased, it can be observed that the multithreaded execution is time 
+efficient due to its parallel nature of computation.  For 10^9 elements, a single threaded execution takes 02.825021 seconds
+whereas the 10 threaded execution takes 01.164909 seconds (1.66 seconds quicker than the prior).
+On the other hand, if the data is kept constant and if the number of threads is increased, then the time taken plateaus out.
+This occurs due to diminishing marginal utility. The benefit of adding an extra thread for computation keeps decaying. 
+This can be observed in the SUM table clearly. Given that there are 10^9 elements, the time benefit of having 2 threads 
+as compared to 1 thread is (07.169441 - 04.259742) seconds = 2.909 seconds but there is 
+time loss of (02.646678 - 02.609050) seconds = 0.037628 seconds when there are 10 threads instead of 9 . With the increasing 
+number of threads and the data being held constant, each thread has less data for computation and again the overhead of having
+threads makes the program execution slow.
 
 With these particular tasks, since the program is never waiting for I/O, the wall time plateaus when the number of threads
 is equal to the number of cores available for parallel execution (in this case, 4). However, if this task did involve waiting
 for I/O (e.g. a web crawler or a program that indexed files on a hard drive), the plateau would likely occur at a much higher
 thread count, and load balancing would become more important.
+
